@@ -50,7 +50,7 @@
 
 ```bash
 # Clone repository
-cd valiant-borg
+cd Chatbot
 ```
 
 ---
