@@ -153,7 +153,6 @@ export const deleteChat = async (req, res, next) => {
     if (!chat) {
       return res.status(404).json({ success: false, message: "Chat conversation not found" });
     }
-
     res.json({ success: true, message: "Chat successfully deleted" });
   } catch (error) {
     next(error);

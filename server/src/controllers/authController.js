@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const generateToken = (id) => {
+const generateToken = async (id) => {
+  const { default: jwt } = await import('jsonwebtoken');
   return jwt.sign({ id }, process.env.JWT_SECRET || 'codesphere_secret_key_2026', {
     expiresIn: '30d',
   });
@@ -37,7 +37,7 @@ export const registerUser = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        token: generateToken(user._id),
+        token: await generateToken(user._id),
       });
     } else {
       res.status(400).json({ message: 'Invalid user data received' });
@@ -71,7 +71,7 @@ export const loginUser = async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      token: await generateToken(user._id),
     });
   } catch (error) {
     next(error);

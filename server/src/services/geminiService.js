@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -7,11 +6,12 @@ const SYSTEM_PROMPT = `You are CodeSphere AI, an expert AI Coding Assistant and 
 Help users write, debug, explain, optimize, and convert code efficiently.
 Format all code snippets cleanly with standard markdown code blocks and programming language tags.`;
 
-function getGeminiClient() {
+async function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured in server .env file.");
   }
+  const { GoogleGenAI } = await import("@google/genai");
   return new GoogleGenAI({ apiKey });
 }
 
@@ -20,7 +20,7 @@ export async function generateAIResponse(message, history = []) {
     throw new Error("Message cannot be empty");
   }
 
-  const ai = getGeminiClient();
+  const ai = await getGeminiClient();
   const modelName = process.env.AI_MODEL || "gemini-2.5-flash";
 
   // Build prompt with system instruction and history if available

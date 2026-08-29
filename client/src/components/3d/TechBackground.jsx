@@ -1,10 +1,9 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars } from '@react-three/drei';
 import { FloatingNodes } from './FloatingNodes';
 import { useSettings } from '../../context/SettingsContext';
 
-export default function TechBackground({ interactive = false }) {
+export default function TechBackground() {
   const { effects3D } = useSettings();
 
   if (!effects3D) {
@@ -18,11 +17,12 @@ export default function TechBackground({ interactive = false }) {
   }
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-20">
       <Canvas
         camera={{ position: [0, 0, 8], fov: 45 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ pointerEvents: interactive ? 'auto' : 'none' }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        style={{ pointerEvents: 'none' }}
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={1.2} />
@@ -30,19 +30,8 @@ export default function TechBackground({ interactive = false }) {
         <pointLight position={[5, -5, 5]} color="#8b5cf6" intensity={1.5} />
 
         <Suspense fallback={null}>
-          <Stars radius={50} depth={50} count={2500} factor={4} saturation={0.5} fade speed={1} />
           <FloatingNodes />
         </Suspense>
-
-        {interactive && (
-          <OrbitControls
-            enableZoom={false}
-            enablePan={false}
-            rotateSpeed={0.4}
-            autoRotate
-            autoRotateSpeed={0.5}
-          />
-        )}
       </Canvas>
 
       {/* Radial overlay gradient for deep futuristic ambiance */}

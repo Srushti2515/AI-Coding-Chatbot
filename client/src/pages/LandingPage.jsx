@@ -51,10 +51,12 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#090d16] text-white relative overflow-hidden">
       {/* 3D Background */}
-      <TechBackground interactive />
+      <TechBackground />
 
       {/* Navigation Bar */}
-      <Navbar />
+      <div className="relative z-10">
+        <Navbar />
+      </div>
 
       {/* Hero Section */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-20 z-10">

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 
 let mongoMemoryServer = null;
 
@@ -19,13 +18,18 @@ export const connectDB = async () => {
       }
     }
 
-    // Fallback in-memory MongoDB so the server works out of the box with 0 setup!
-    mongoMemoryServer = await MongoMemoryServer.create();
-    const uri = mongoMemoryServer.getUri();
-    const conn = await mongoose.connect(uri);
-    console.log(`[MongoDB] Connected to In-Memory MongoDB Server: ${conn.connection.host}`);
+    // Keep the API available when the optional local database fallback cannot start.
+    try {
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      mongoMemoryServer = await MongoMemoryServer.create();
+      const uri = mongoMemoryServer.getUri();
+      const conn = await mongoose.connect(uri);
+      console.log(`[MongoDB] Connected to In-Memory MongoDB Server: ${conn.connection.host}`);
+    } catch (fallbackError) {
+      console.warn(`[MongoDB] In-memory fallback unavailable: ${fallbackError.message}`);
+      console.warn('[MongoDB] Server will continue without a database connection.');
+    }
   } catch (error) {
     console.error(`[MongoDB Error] ${error.message}`);
-    process.exit(1);
   }
 };
