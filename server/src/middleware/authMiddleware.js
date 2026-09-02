@@ -1,6 +1,4 @@
-import User from "../models/User.js";
-
-const loadJwt = () => import("jsonwebtoken");
+import { getJwt, getUserModel } from '../utils/lazyLoad.js';
 
 // Optional protect middleware: Attaches req.user if token is valid, otherwise allows guest access
 export const optionalProtect = async (req, res, next) => {
@@ -9,7 +7,8 @@ export const optionalProtect = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
-      const { default: jwt } = await loadJwt();
+      const jwt = await getJwt();
+      const User = await getUserModel();
       const decoded = jwt.verify(token, process.env.JWT_SECRET || "codesphere_secret_key_2026");
       req.user = await User.findById(decoded.id).select("-password");
     } catch (error) {
@@ -30,7 +29,8 @@ export const protect = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
-      const { default: jwt } = await loadJwt();
+      const jwt = await getJwt();
+      const User = await getUserModel();
       const decoded = jwt.verify(token, process.env.JWT_SECRET || "codesphere_secret_key_2026");
 
       req.user = await User.findById(decoded.id).select("-password");

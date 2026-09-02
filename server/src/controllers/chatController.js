@@ -1,10 +1,11 @@
-import Chat from "../models/Chat.js";
+import { getChatModel } from "../utils/lazyLoad.js";
 import { generateAIChatResponse } from "../services/aiService.js";
 
 // @desc    Get all chats for logged-in user
 // @route   GET /api/chats
 export const getUserChats = async (req, res, next) => {
   try {
+    const Chat = await getChatModel();
     const chats = await Chat.find({ userId: req.user._id })
       .select("title createdAt updatedAt messages")
       .sort({ updatedAt: -1 });
@@ -28,6 +29,7 @@ export const getUserChats = async (req, res, next) => {
 // @route   GET /api/chats/:id
 export const getChatById = async (req, res, next) => {
   try {
+    const Chat = await getChatModel();
     const chat = await Chat.findOne({ _id: req.params.id, userId: req.user._id });
 
     if (!chat) {
@@ -44,6 +46,7 @@ export const getChatById = async (req, res, next) => {
 // @route   POST /api/chat
 export const sendMessage = async (req, res, next) => {
   try {
+    const Chat = await getChatModel();
     const { chatId, message, attachment } = req.body;
 
     if (!message && !attachment) {
@@ -123,6 +126,7 @@ export const sendMessage = async (req, res, next) => {
 // @route   PUT /api/chats/:id
 export const updateChatTitle = async (req, res, next) => {
   try {
+    const Chat = await getChatModel();
     const { title } = req.body;
     if (!title) {
       return res.status(400).json({ success: false, message: "Title is required" });
@@ -148,6 +152,7 @@ export const updateChatTitle = async (req, res, next) => {
 // @route   DELETE /api/chats/:id
 export const deleteChat = async (req, res, next) => {
   try {
+    const Chat = await getChatModel();
     const chat = await Chat.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
 
     if (!chat) {

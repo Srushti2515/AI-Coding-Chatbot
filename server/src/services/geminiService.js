@@ -21,32 +21,56 @@ export async function generateAIResponse(message, history = []) {
   }
 
   const ai = await getGeminiClient();
-  const modelName = process.env.AI_MODEL || "gemini-2.5-flash";
+  const modelName = process.env.AI_MODEL || "gemini-2.0-flash";
 
-  // Build prompt with system instruction and history if available
-  let fullPrompt = `${SYSTEM_PROMPT}\n\n`;
+  // Build proper message format for Gemini API
+  const contents = [];
 
+  // Add system context as user message
+  contents.push({
+    role: "user",
+    parts: [{ text: SYSTEM_PROMPT }],
+  });
+
+  // Add model response to acknowledge system prompt
+  contents.push({
+    role: "model",
+    parts: [{ text: "I understand. I'm CodeSphere AI, your expert coding assistant." }],
+  });
+
+  // Add conversation history (last 6 messages for context)
   if (Array.isArray(history) && history.length > 0) {
     const recentHistory = history.slice(-6);
     for (const msg of recentHistory) {
-      const roleLabel = msg.role === "user" ? "User" : "Assistant";
-      fullPrompt += `${roleLabel}: ${msg.content}\n\n`;
+      contents.push({
+        role: msg.role === "user",
+        parts: [{ text: msg.content }],
+      });
     }
   }
 
-  fullPrompt += `User: ${message}\n\nAssistant:`;
+  // Add current user message
+  contents.push({
+    role: "user",
+    parts: [{ text: message }],
+  });
 
   try {
     const response = await ai.models.generateContent({
       model: modelName,
-      contents: fullPrompt,
+      contents: contents,
     });
 
-    if (!response || !response.text) {
+    if (!response || !response.candidates || !response.candidates[0]) {
       throw new Error("Gemini returned an empty response.");
     }
 
-    return response.text;
+    const text = response.candidates[0].content.parts[0].text;
+    if (!text) {
+      throw new Error("No text in Gemini response.");
+    }
+
+    return text;
   } catch (error) {
     console.error(`[Gemini Error - Model: ${modelName}]:`, error.message);
     
@@ -56,9 +80,9 @@ export async function generateAIResponse(message, history = []) {
         console.log("Retrying with fallback model gemini-1.5-flash...");
         const fallbackResponse = await ai.models.generateContent({
           model: "gemini-1.5-flash",
-          contents: fullPrompt,
+          contents: contents,
         });
-        return fallbackResponse.text;
+        return fallbackResponse.candidates[0].content.parts[0].text;
       } catch (fallbackError) {
         console.error("[Gemini Fallback Error]:", fallbackError.message);
         throw fallbackError;

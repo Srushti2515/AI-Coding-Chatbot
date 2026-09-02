@@ -41,7 +41,20 @@ export const AuthProvider = ({ children }) => {
       setAuthModal(null);
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      const status = err.response?.status;
+      const data = err.response?.data;
+      
+      // Handle database unavailability
+      if (status === 503 || data?.type === 'DATABASE_UNAVAILABLE') {
+        const msg = `${data?.message || 'Database service is unavailable.'}${
+          data?.suggestion ? ` ${data.suggestion}` : ''
+        }`;
+        setError(msg);
+        return { success: false, message: msg };
+      }
+      
+      // Handle other HTTP errors
+      const msg = data?.message || err.message || 'Login failed. Please check your credentials.';
       setError(msg);
       return { success: false, message: msg };
     } finally {
@@ -61,7 +74,20 @@ export const AuthProvider = ({ children }) => {
       setAuthModal(null);
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+      const status = err.response?.status;
+      const data = err.response?.data;
+      
+      // Handle database unavailability
+      if (status === 503 || data?.type === 'DATABASE_UNAVAILABLE') {
+        const msg = `${data?.message || 'Database service is unavailable.'}${
+          data?.suggestion ? ` ${data.suggestion}` : ''
+        }`;
+        setError(msg);
+        return { success: false, message: msg };
+      }
+      
+      // Handle other HTTP errors
+      const msg = data?.message || err.message || 'Registration failed. Please try again.';
       setError(msg);
       return { success: false, message: msg };
     } finally {
