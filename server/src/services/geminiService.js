@@ -6,6 +6,10 @@ const SYSTEM_PROMPT = `You are CodeSphere AI, an expert AI Coding Assistant and 
 Help users write, debug, explain, optimize, and convert code efficiently.
 Format all code snippets cleanly with standard markdown code blocks and programming language tags.`;
 
+const MODEL_ALIASES = {
+  "gemini-2.0-flash": "gemini-3.6-flash",
+};
+
 async function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
@@ -21,7 +25,12 @@ export async function generateAIResponse(message, history = []) {
   }
 
   const ai = await getGeminiClient();
-  const modelName = process.env.AI_MODEL || "gemini-2.0-flash";
+  const modelName = (process.env.AI_MODEL || "gemini-2.0-flash")
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/^models\//, "")
+    .split(/\s+/)[0];
+  const resolvedModelName = MODEL_ALIASES[modelName] || modelName;
 
   // Build proper message format for Gemini API
   const contents = [];
@@ -43,7 +52,7 @@ export async function generateAIResponse(message, history = []) {
     const recentHistory = history.slice(-6);
     for (const msg of recentHistory) {
       contents.push({
-        role: msg.role === "user",
+        role: msg.role === "user" ? "user" : "model",
         parts: [{ text: msg.content }],
       });
     }
@@ -57,7 +66,7 @@ export async function generateAIResponse(message, history = []) {
 
   try {
     const response = await ai.models.generateContent({
-      model: modelName,
+      model: resolvedModelName,
       contents: contents,
     });
 
@@ -73,21 +82,6 @@ export async function generateAIResponse(message, history = []) {
     return text;
   } catch (error) {
     console.error(`[Gemini Error - Model: ${modelName}]:`, error.message);
-    
-    // Fallback model retry if modelName fails
-    if (modelName !== "gemini-1.5-flash") {
-      try {
-        console.log("Retrying with fallback model gemini-1.5-flash...");
-        const fallbackResponse = await ai.models.generateContent({
-          model: "gemini-1.5-flash",
-          contents: contents,
-        });
-        return fallbackResponse.candidates[0].content.parts[0].text;
-      } catch (fallbackError) {
-        console.error("[Gemini Fallback Error]:", fallbackError.message);
-        throw fallbackError;
-      }
-    }
     throw error;
   }
 }
