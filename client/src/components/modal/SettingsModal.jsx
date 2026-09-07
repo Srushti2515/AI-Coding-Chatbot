@@ -105,7 +105,7 @@ export default function SettingsModal() {
                   className="w-full bg-slate-900 border border-slate-800 text-white text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-cyan-500 font-mono"
                 >
                   <option value="gemini-1.5-flash">Google Gemini 1.5 Flash (Recommended - Fast & Code Smart)</option>
-                  <option value="gemini-2.0-flash">Google Gemini 2.0 Flash (Next-Gen AI)</option>
+                  <option value="gemini-3.6-flash">Google Gemini 3.6 Flash (Next-Gen AI)</option>
                   <option value="gpt-4o">OpenAI GPT-4o Compatible</option>
                 </select>
               </div>

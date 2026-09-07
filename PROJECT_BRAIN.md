@@ -100,7 +100,7 @@ All `/api` routes use the global 200 requests/15-minute/IP limiter.
 
 ## 9. AI Integration
 - Provider: Google Gemini. Active SDK: `@google/genai`.
-- Model: `AI_MODEL`, default `gemini-2.0-flash`; failed non-`gemini-1.5-flash` calls retry with `gemini-1.5-flash`.
+- Model: `AI_MODEL`, default `gemini-3.6-flash`.
 - Flow: controllers call prompt builders in `aiService.js`; `geminiService.js` adds system context, up to six recent messages, and the current message, then calls `generateContent`.
 - Response: first candidate/first text part is returned and optionally saved as an assistant message.
 - Errors: missing key or provider failures throw; provider calls retry once. Guest responses are client-side and do not use this server path.

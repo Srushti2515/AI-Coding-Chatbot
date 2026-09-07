@@ -5,10 +5,7 @@ dotenv.config();
 const SYSTEM_PROMPT = `You are CodeSphere AI, an expert AI Coding Assistant and Senior Software Engineer.
 Help users write, debug, explain, optimize, and convert code efficiently.
 Format all code snippets cleanly with standard markdown code blocks and programming language tags.`;
-
-const MODEL_ALIASES = {
-  "gemini-2.0-flash": "gemini-3.6-flash",
-};
+const MODEL_NAME = "gemini-3.6-flash";
 
 async function getGeminiClient() {
   const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY || process.env.GOOGLE_API_KEY;
@@ -24,28 +21,8 @@ export async function generateAIResponse(message, history = []) {
     throw new Error("Message cannot be empty");
   }
 
-  const ai = await getGeminiClient();
-  const modelName = (process.env.AI_MODEL || "gemini-2.0-flash")
-    .trim()
-    .replace(/^['"]|['"]$/g, "")
-    .replace(/^models\//, "")
-    .split(/\s+/)[0];
-  const resolvedModelName = MODEL_ALIASES[modelName] || modelName;
-
-  // Build proper message format for Gemini API
+  // Keep system instructions separate from the user's conversation.
   const contents = [];
-
-  // Add system context as user message
-  contents.push({
-    role: "user",
-    parts: [{ text: SYSTEM_PROMPT }],
-  });
-
-  // Add model response to acknowledge system prompt
-  contents.push({
-    role: "model",
-    parts: [{ text: "I understand. I'm CodeSphere AI, your expert coding assistant." }],
-  });
 
   // Add conversation history (last 6 messages for context)
   if (Array.isArray(history) && history.length > 0) {
@@ -65,24 +42,30 @@ export async function generateAIResponse(message, history = []) {
   });
 
   try {
+    const ai = await getGeminiClient();
     const response = await ai.models.generateContent({
-      model: resolvedModelName,
-      contents: contents,
+      model: MODEL_NAME,
+      contents,
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+      },
     });
 
-    if (!response || !response.candidates || !response.candidates[0]) {
-      throw new Error("Gemini returned an empty response.");
-    }
-
-    const text = response.candidates[0].content.parts[0].text;
+    const text = response?.text?.trim();
     if (!text) {
-      throw new Error("No text in Gemini response.");
+      throw new Error("Gemini returned an empty response.");
     }
 
     return text;
   } catch (error) {
-    console.error(`[Gemini Error - Model: ${modelName}]:`, error.message);
-    throw error;
+    const status = error?.status ?? error?.code ?? "unknown";
+    const message = error?.message || "Unknown Gemini error";
+    console.error("[Gemini Error]", {
+      status,
+      message,
+      model: MODEL_NAME,
+    });
+    throw new Error("Gemini request failed. Please try again.");
   }
 }
 

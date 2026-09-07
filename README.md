@@ -15,7 +15,7 @@
 * **Developer Tools Suite**: Direct tools for Code Generation, Debugging, Line-by-Line Explaining, Performance Optimization, Unit Test Generation, Documentation, and Language Conversion (Python ↔ Java ↔ C++ ↔ JavaScript ↔ TypeScript ↔ SQL).
 * **Voice & File Uploads**: Speech-to-text voice input (Web Speech API) and code file parser (`.js`, `.jsx`, `.ts`, `.tsx`, `.py`, `.java`, `.cpp`, `.c`, `.html`, `.css`, `.json`, `.sql`, `.md`, `.txt`).
 * **Authentication & Persistence**: User registration, login, JWT token auth, password hashing (`bcryptjs`), and MongoDB chat history storage with an in-memory fallback server.
-* **Clean AI Layer**: Server-side AI provider service supporting Google Gemini API (`gemini-1.5-flash`, `gemini-2.0-flash`) with zero client key exposure and intelligent offline fallback.
+* **Clean AI Layer**: Server-side AI provider service supporting Google Gemini API (`gemini-3.6-flash`) with zero client key exposure and intelligent offline fallback.
 
 ---
 
